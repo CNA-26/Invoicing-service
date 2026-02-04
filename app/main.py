@@ -1,12 +1,14 @@
 from fastapi import FastAPI
+from app.routes import router
 
-app = FastAPI()
+app = FastAPI(
+    title="Invoicing Service API",
+    version="Sprint 2"
+)
 
-@app.get("/")
-def read_root():
-    return { "msg": "Hello!", "v": "0.2" }
+app.include_router(router)
 
 
-@app.get("/items/{id}")
-def read_item(item_id: int, q: str = None):
-    return {"id": id, "q": q}
+@app.get("/health")
+def health_check():
+    return {"status": "ok"}

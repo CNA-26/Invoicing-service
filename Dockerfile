@@ -1,17 +1,13 @@
-FROM python:3.10
+FROM python:3.10-slim
 
 WORKDIR /code
 
-COPY ./requirements.txt /code/requirements.txt
+COPY requirements.txt .
 
-RUN pip install --no-cache-dir --upgrade -r /code/requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
-COPY ./app /code/app
+COPY ./app ./app
 
-# This can be overridden in .env if declared in docker-compose
-ENV MODE=production
+ENV PORT=8080
 
-# Set MODE=development in .env when run locally to listen for changes
-CMD ["sh", "-c", "if [ \"$MODE\" = 'development' ]; then fastapi dev app/main.py --host 0.0.0.0 --port 8080 --reload; else fastapi run app/main.py --host 0.0.0.0 --port 8080; fi"]
-
-#CMD ["fastapi", "run", "app/main.py", "--host", "0.0.0.0", "--port", "8080"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8080"]

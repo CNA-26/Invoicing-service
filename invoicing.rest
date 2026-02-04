@@ -1,0 +1,14 @@
+### Health check
+GET https://invoicing-service-git-cna-26.2.rahtiapp.fi/health
+
+###
+
+### Create invoice
+POST https://invoicing-service-git-cna-26.2.rahtiapp.fi/invoices
+Content-Type: application/json
+
+{
+  "orderId": "order-123",
+  "userId": "user-42",
+  "amount": 49.90
+}
