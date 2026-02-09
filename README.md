@@ -128,6 +128,7 @@ Response:
 ### Endpoint Testing
 
 A REST client test file is included:
+
 ```bash
 invoicing.rest
 ```
