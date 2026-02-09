@@ -1,24 +1,149 @@
-# docker-fastapi 
+# Invoicing Service API
 
-A sample project for deploying to a PaaS Service like Render or CSC Rahti.
+---
 
-### For deployment to Render
+What we have for now:
 
-- Log in to https://render.com/
-- Create a New Web Service.
-- Connect to GitHub and choose Connect Credentials.
-- Set Language to Docker.
-- Select the EU Central region (or whatever is nearest to you)
-- Choose Instance Type: Free.
+- A working live API endpoint
+- Hardcoded placeholder invoice data (no database yet)
+- REST client testing file
 
-### For deployment to CSC Rahti (OpenShift)
+---
 
-Note: Change the Git reference setting in OpenShift to *main*:    
-    Edit BuildConfig ==> Show advanced git options ==> Git reference: `main`
+## Base URL (Rahti Deployment)
 
-### For local real-time development
+```bash
+https://invoicing-service-git-cna-26.2.rahtiapp.fi/
+```
 
-Rename `.env-example` to `.env` to override the `MODE=production`set in the `Dockerfile`. Note that this needs a valueless declaration of `MODE` in `docker-compose.yml`
+---
 
-To run the container locally:
-`docker-compose up --build`
+## Running Locally
+
+### 1. Install requirements
+
+```bash
+pip install -r requirements.txt
+```
+
+2. Start the server
+
+```bash
+uvicorn app.main:app --reload --port 8080
+```
+The API will be available at:
+```bash
+http://localhost:8080
+```
+
+Swagger documentation:
+
+```bash
+http://localhost:8080/docs
+```
+
+### Running with Docker
+
+Build and run locally
+
+```bash
+docker-compose up --build
+```
+
+The service will run on:
+
+```bash
+http://localhost:8080
+```
+
+### Health Check Endpoint
+
+Used to verify that the service is running.
+
+Example:
+
+```bash
+GET /health
+```
+
+Response:
+```bash
+{
+  "status": "ok"
+}
+```
+
+## API Endpoints
+
+### Create Invoice
+
+```bash
+POST /invoices
+```
+
+Creates an invoice from an order.
+
+Request body:
+```bash
+{
+  "orderId": "order-123",
+  "userId": "user-42",
+  "amount": 49.90,
+  "currency": "EUR"
+}
+```
+Response:
+```bash
+{
+  "invoiceId": "inv-abc123",
+  "orderId": "order-123",
+  "userId": "user-42",
+  "amount": 49.90,
+  "status": "created",
+  "pdfUrl": "placeholder.pdf"
+}
+```
+### Get Invoice by ID
+```bash
+GET /invoices/{invoiceId}
+```
+Fetches invoice details.
+
+Example:
+```bash
+GET /invoices/inv-001
+```
+Response:
+```bash
+{
+  "invoiceId": "inv-001",
+  "orderId": "order-123",
+  "userId": "user-42",
+  "amount": 49.90,
+  "status": "created",
+  "pdfUrl": "placeholder.pdf"
+}
+```
+
+### Endpoint Testing
+
+A REST client test file is included:
+```bash
+invoicing.rest
+```
+Example test:
+
+```bash
+### Health check
+GET https://invoicing-service-git-cna-26.2.rahtiapp.fi/health
+
+### Create invoice
+POST https://invoicing-service-git-cna-26.2.rahtiapp.fi/invoices
+Content-Type: application/json
+
+{
+  "orderId": "order-123",
+  "userId": "user-42",
+  "amount": 49.90
+}
+```
