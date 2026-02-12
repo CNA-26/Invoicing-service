@@ -3,9 +3,6 @@ from pydantic import BaseModel
 
 class InvoiceCreateRequest(BaseModel):
     orderId: str
-    userId: str
-    amount: float
-    currency: str = "EUR"
 
 
 class InvoiceResponse(BaseModel):
