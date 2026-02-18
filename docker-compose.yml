@@ -27,6 +27,7 @@ services:
       - "8080:8080"
     volumes:
       - ./app:/code/app
+      - ./app/pdfs:/code/app/pdfs
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
       PDF_FOLDER: /code/app/pdfs
