@@ -1,12 +1,28 @@
-version: "3.8"
-
 services:
+  db:
+    image: postgres:14
+    container_name: invoicing-db
+    restart: always
+    ports:
+      - "5432:5432"
+    env_file:
+      - .env
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U devuser -d devdb"]
+      interval: 2s
+      timeout: 5s
+      retries: 10
+
   fastapi-app:
     build: .
+    container_name: invoicing-api
+    restart: always
     ports:
       - "8080:8080"
     volumes:
       - ./app:/code/app
-    environment:
-      - MODE=development
-      - PYTHONUNBUFFERED=1
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
