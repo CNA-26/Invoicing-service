@@ -1,14 +1,20 @@
+version: "3.9"
+
 services:
   db:
     image: postgres:14
     container_name: invoicing-db
     restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     ports:
       - "5432:5432"
-    env_file:
-      - .env
+    volumes:
+      - db-data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U devuser -d devdb"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 2s
       timeout: 5s
       retries: 10
@@ -21,8 +27,12 @@ services:
       - "8080:8080"
     volumes:
       - ./app:/code/app
-    env_file:
-      - .env
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      PDF_FOLDER: /code/app/pdfs
     depends_on:
       db:
         condition: service_healthy
+
+volumes:
+  db-data:
