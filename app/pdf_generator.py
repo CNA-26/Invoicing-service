@@ -15,16 +15,17 @@ def generate_invoice_pdf(invoice, order):
     c.drawString(50, 720, f"User ID: {invoice['userId']}")
     c.drawString(50, 700, f"Amount: {invoice['amount']} EUR")
 
-    c.drawString(50, 660, "Items:")
+    y = 660
+    c.drawString(50, y, "Items:")
+    y -= 20
 
-    y = 640
     for item in order["items"]:
         c.drawString(70, y, f"- {item['name']} ({item['price']} EUR)")
         y -= 20
 
-    c.drawString(50, y - 20, "Thank you for your purchase!")
+    c.drawString(50, y - 20, "Thank you!")
 
     c.save()
-
     buffer.seek(0)
+
     return buffer.read()
