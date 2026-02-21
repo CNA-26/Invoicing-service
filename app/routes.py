@@ -16,7 +16,7 @@ router = APIRouter()
 PDF_FOLDER = os.getenv("PDF_FOLDER", "app/pdfs")
 os.makedirs(PDF_FOLDER, exist_ok=True)
 
-INVOICE_BASE_URL = "http://localhost:8080"
+INVOICE_BASE_URL = "https://invoicing-service-git-cna-26.2.rahtiapp.fi"
 
 
 @router.post("/invoices", response_model=InvoiceResponse)
