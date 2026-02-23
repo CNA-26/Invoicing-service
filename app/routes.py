@@ -35,15 +35,15 @@ def create_invoice(data: InvoiceCreateRequest, db: Session = Depends(get_db)):
     amount = sum(item["price"] for item in order["items"])
 
     invoice = Invoice(
-    invoiceId=invoice_id,
-    orderId=order["orderId"],
-    userId=order["userId"],
-    email=order["email"], 
-    amount=amount,
-    currency="EUR",
-    status="created",
-    pdfUrl=f"{INVOICE_BASE_URL}/invoices/{invoice_id}/pdf"
-)
+        invoiceId=invoice_id,
+        orderId=order["orderId"],
+        userId=order["userId"],
+        email=order["email"],
+        amount=amount,
+        currency="EUR",
+        status="created",
+        pdfUrl=f"{INVOICE_BASE_URL}/invoices/{invoice_id}/pdf"
+    )
 
     db.add(invoice)
     db.commit()
@@ -56,12 +56,22 @@ def create_invoice(data: InvoiceCreateRequest, db: Session = Depends(get_db)):
     with open(pdf_path, "wb") as f:
         f.write(pdf_bytes)
 
-    send_invoice_email(
+    email_success = send_invoice_email(
         email=order["email"],
         invoice_id=invoice_id,
         amount=amount,
         pdf_url=invoice.pdfUrl
     )
+
+    print("Email success:", email_success)
+
+    if email_success:
+        invoice.status = "email_sent"
+    else:
+        invoice.status = "email_failed"
+
+    db.commit()
+    db.refresh(invoice)
 
     return invoice
 

@@ -3,10 +3,6 @@ import requests
 
 
 def send_invoice_email(email: str, invoice_id: str, amount: float, pdf_url: str):
-    """
-    Sends invoice data to the Email Service.
-    Does NOT raise exceptions to avoid breaking invoice creation.
-    """
 
     EMAIL_SERVICE_URL = os.getenv("EMAIL_SERVICE_URL")
     EMAIL_API_KEY = os.getenv("EMAIL_API_KEY")
@@ -30,13 +26,11 @@ def send_invoice_email(email: str, invoice_id: str, amount: float, pdf_url: str)
             timeout=5
         )
 
-        if response.status_code == 200:
-            print("Email sent successfully")
-            return True
-        else:
-            print(f"Email failed: {response.status_code} - {response.text}")
-            return False
+        print("Email service HTTP status:", response.status_code)
+        print("Email service response body:", response.text)
+
+        return response.status_code == 200
 
     except Exception as e:
-        print(f"Error contacting email service: {e}")
+        print("Error contacting email service:", e)
         return False
