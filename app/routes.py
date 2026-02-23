@@ -56,14 +56,22 @@ def create_invoice(data: InvoiceCreateRequest, db: Session = Depends(get_db)):
     with open(pdf_path, "wb") as f:
         f.write(pdf_bytes)
 
-    email_response = send_invoice_email(
-        email=order["email"],
-        invoice_id=invoice_id,
-        amount=amount,
-        pdf_url=invoice.pdfUrl
+    email_success, email_response = send_invoice_email(
+    email=order["email"],
+    invoice_id=invoice_id,
+    amount=amount
     )
 
+    print("EMAIL SUCCESS:", email_success)
     print("EMAIL RESPONSE:", email_response)
+
+    if email_success:
+        invoice.status = "email_sent"
+    else:
+        invoice.status = "email_failed"
+
+    db.commit()
+    db.refresh(invoice)
 
     return invoice
 
