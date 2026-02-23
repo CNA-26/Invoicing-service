@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import FileResponse
-from app.models import InvoiceCreateRequest, InvoiceResponse
+from app.models import InvoiceCreateRequest
+from app.schemas import InvoiceResponse
 from app.order_data import orders
 from app.pdf_generator import generate_invoice_pdf
 from app.services.email_service import send_invoice_email
@@ -34,13 +35,15 @@ def create_invoice(data: InvoiceCreateRequest, db: Session = Depends(get_db)):
     amount = sum(item["price"] for item in order["items"])
 
     invoice = Invoice(
-        invoiceId=invoice_id,
-        orderId=order["orderId"],
-        userId=order["userId"],
-        amount=amount,
-        status="created",
-        pdfUrl=f"{INVOICE_BASE_URL}/invoices/{invoice_id}/pdf"
-    )
+    invoiceId=invoice_id,
+    orderId=order["orderId"],
+    userId=order["userId"],
+    email=order["email"], 
+    amount=amount,
+    currency="EUR",
+    status="created",
+    pdfUrl=f"{INVOICE_BASE_URL}/invoices/{invoice_id}/pdf"
+)
 
     db.add(invoice)
     db.commit()
