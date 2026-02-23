@@ -1,5 +1,6 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from fastapi.responses import FileResponse
+from sqlalchemy.orm import Session
 from app.models import InvoiceCreateRequest
 from app.schemas import InvoiceResponse
 from app.order_data import orders
@@ -7,8 +8,6 @@ from app.pdf_generator import generate_invoice_pdf
 from app.services.email_service import send_invoice_email
 from app.database import get_db
 from app.db_models import Invoice
-from sqlalchemy.orm import Session
-from fastapi import Depends
 import uuid
 import os
 
@@ -51,27 +50,19 @@ def create_invoice(data: InvoiceCreateRequest, db: Session = Depends(get_db)):
 
     pdf_bytes = generate_invoice_pdf(invoice.__dict__, order)
 
-    pdf_path = f"{PDF_FOLDER}/{invoice_id}.pdf"
+    pdf_path = os.path.join(PDF_FOLDER, f"{invoice_id}.pdf")
 
     with open(pdf_path, "wb") as f:
         f.write(pdf_bytes)
 
-    email_success = send_invoice_email(
+    email_response = send_invoice_email(
         email=order["email"],
         invoice_id=invoice_id,
         amount=amount,
         pdf_url=invoice.pdfUrl
     )
 
-    print("Email success:", email_success)
-
-    if email_success:
-        invoice.status = "email_sent"
-    else:
-        invoice.status = "email_failed"
-
-    db.commit()
-    db.refresh(invoice)
+    print("EMAIL RESPONSE:", email_response)
 
     return invoice
 
@@ -79,7 +70,7 @@ def create_invoice(data: InvoiceCreateRequest, db: Session = Depends(get_db)):
 @router.get("/invoices/{invoice_id}/pdf")
 def download_pdf(invoice_id: str):
 
-    pdf_path = f"{PDF_FOLDER}/{invoice_id}.pdf"
+    pdf_path = os.path.join(PDF_FOLDER, f"{invoice_id}.pdf")
 
     if not os.path.exists(pdf_path):
         raise HTTPException(status_code=404, detail="Invoice PDF not found")

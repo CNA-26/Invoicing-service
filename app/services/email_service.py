@@ -9,7 +9,7 @@ def send_invoice_email(email: str, invoice_id: str, amount: float, pdf_url: str)
 
     if not EMAIL_SERVICE_URL or not EMAIL_API_KEY:
         print("Email service environment variables not set.")
-        return False
+        return None
 
     try:
         response = requests.post(
@@ -26,11 +26,14 @@ def send_invoice_email(email: str, invoice_id: str, amount: float, pdf_url: str)
             timeout=5
         )
 
-        print("Email service HTTP status:", response.status_code)
-        print("Email service response body:", response.text)
+        print("Email HTTP Status:", response.status_code)
+        print("Email Response Text:", response.text)
 
-        return response.status_code == 200
+        try:
+            return response.json()
+        except:
+            return response.text
 
     except Exception as e:
         print("Error contacting email service:", e)
-        return False
+        return None
