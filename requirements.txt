@@ -5,4 +5,4 @@ pydantic
 requests
 python-dotenv
 reportlab
-psycopg2
+psycopg2-binary
