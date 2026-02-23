@@ -21,6 +21,7 @@ INVOICE_BASE_URL = os.getenv(
     "http://localhost:8080"
 )
 
+# bla bla
 
 @router.post("/invoices", response_model=InvoiceResponse)
 def create_invoice(data: InvoiceCreateRequest, db: Session = Depends(get_db)):
