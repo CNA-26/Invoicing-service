@@ -1,150 +1,164 @@
 # Invoicing Service API
 
----
+A FastAPI microservice that creates invoices, generates a PDF, stores invoice data in PostgreSQL and sends the invoice to the Email Service.
 
-What we have for now:
-
-- A working live API endpoint
-- Hardcoded placeholder invoice data (no database yet)
-- REST client testing file
+Currently the Order Service is not integrated yet, so placeholder order data is used.
 
 ---
 
-## Base URL (Rahti Deployment)
+# Features
 
-```bash
+- FastAPI REST API
+- PostgreSQL database (SQLAlchemy)
+- Invoice stored in database
+- PDF invoice generation
+- PDF download endpoint
+- Integration with Email Service
+- Basic error handling
+- Docker support
+
+---
+
+# Base URL (Rahti Deployment)
+
+```
 https://invoicing-service-git-cna-26.2.rahtiapp.fi/
 ```
 
 ---
 
-## Running Locally
+# API Endpoints
 
-### 1. Install requirements
-
-```bash
-pip install -r requirements.txt
-```
-
-2. Start the server
-
-```bash
-uvicorn app.main:app --reload --port 8080
-```
-The API will be available at:
-```bash
-http://localhost:8080
-```
-
-Swagger documentation:
-
-```bash
-http://localhost:8080/docs
-```
-
-### Running with Docker
-
-Build and run locally
-
-```bash
-docker-compose up --build
-```
-
-The service will run on:
-
-```bash
-http://localhost:8080
-```
-
-### Health Check Endpoint
+## Health Check
 
 Used to verify that the service is running.
 
-Example:
-
-```bash
+```
 GET /health
 ```
 
-Response:
-```bash
+Response
+
+```json
 {
   "status": "ok"
 }
 ```
 
-## API Endpoints
+---
 
-### Create Invoice
-
-```bash
-POST /invoices
-```
+# Create Invoice
 
 Creates an invoice from an order.
 
-Request body:
-```bash
+```
+POST /invoices
+```
+
+Request
+
+```json
 {
-  "orderId": "order-123",
-  "userId": "user-42",
-  "amount": 49.90,
-  "currency": "EUR"
+  "orderId": "order-123"
 }
 ```
-Response:
-```bash
+
+Example response
+
+```json
 {
   "invoiceId": "inv-abc123",
   "orderId": "order-123",
   "userId": "user-42",
-  "amount": 49.90,
-  "status": "created",
-  "pdfUrl": "placeholder.pdf"
-}
-```
-### Get Invoice by ID
-```bash
-GET /invoices/{invoiceId}
-```
-Fetches invoice details.
-
-Example:
-```bash
-GET /invoices/inv-001
-```
-Response:
-```bash
-{
-  "invoiceId": "inv-001",
-  "orderId": "order-123",
-  "userId": "user-42",
-  "amount": 49.90,
-  "status": "created",
-  "pdfUrl": "placeholder.pdf"
+  "email": "customer@example.com",
+  "amount": 49.9,
+  "currency": "EUR",
+  "status": "email_sent",
+  "pdfUrl": "http://localhost:8080/invoices/inv-abc123/pdf"
 }
 ```
 
-### Endpoint Testing
+---
 
-A REST client test file is included:
+# Download Invoice PDF
+
+```
+GET /invoices/{invoiceId}/pdf
+```
+
+Returns the generated PDF invoice.
+
+Example
+
+```
+GET /invoices/inv-abc123/pdf
+```
+
+---
+
+# Running Locally
+
+Install dependencies
 
 ```bash
-invoicing.rest
+pip install -r requirements.txt
 ```
-Example test:
+
+Start the API
 
 ```bash
-### Health check
-GET https://invoicing-service-git-cna-26.2.rahtiapp.fi/health
-
-### Create invoice
-POST https://invoicing-service-git-cna-26.2.rahtiapp.fi/invoices
-Content-Type: application/json
-
-{
-  "orderId": "order-123",
-  "userId": "user-42",
-  "amount": 49.90
-}
+uvicorn app.main:app --reload --port 8080
 ```
+
+API available at
+
+```
+http://localhost:8080
+```
+
+Swagger documentation
+
+```
+http://localhost:8080/docs
+```
+
+---
+
+# Running with Docker
+
+Start containers
+
+```bash
+docker-compose up --build
+```
+
+Service runs at
+
+```
+http://localhost:8080
+```
+
+---
+
+# Database
+
+The service uses PostgreSQL and stores invoices in the `invoices` table.
+
+Stored fields:
+
+- invoiceId
+- orderId
+- userId
+- email
+- amount
+- currency
+- status
+- pdfUrl
+
+---
+
+# Notes
+
+- Order Service is not integrated yet
+- Placeholder order data is used for testing
+- Email sending is handled via Email Service API
