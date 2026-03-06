@@ -25,16 +25,23 @@ INVOICE_BASE_URL = os.getenv(
 @router.post("/invoices", response_model=InvoiceResponse)
 def create_invoice(data: InvoiceCreateRequest, db: Session = Depends(get_db)):
 
+    print("========== INVOICE SERVICE DEBUG ==========")
+    print("Received orderId:", data.orderId)
+
     order = orders.get(data.orderId)
 
     if not order:
         raise HTTPException(status_code=404, detail="Order not found")
 
-    print("ORDER FROM ORDER SERVICE:", order)
+    print("ORDER DATA:", order)
 
     invoice_id = f"inv-{uuid.uuid4().hex[:6]}"
     amount = sum(item["price"] for item in order["items"])
     pdf_url = f"{INVOICE_BASE_URL}/invoices/{invoice_id}/pdf"
+
+    print("Generated invoice_id:", invoice_id)
+    print("Calculated amount:", amount)
+    print("PDF URL:", pdf_url)
 
     invoice = Invoice(
         invoiceId=invoice_id,
@@ -51,11 +58,16 @@ def create_invoice(data: InvoiceCreateRequest, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(invoice)
 
+    print("Invoice saved to database")
+
     pdf_bytes = generate_invoice_pdf(invoice.__dict__, order)
 
     pdf_path = os.path.join(PDF_FOLDER, f"{invoice_id}.pdf")
+
     with open(pdf_path, "wb") as f:
         f.write(pdf_bytes)
+
+    print("PDF created at:", pdf_path)
 
     payload = {
         "email": order["email"],
@@ -65,7 +77,7 @@ def create_invoice(data: InvoiceCreateRequest, db: Session = Depends(get_db)):
         "link": pdf_url
     }
 
-    print("EMAIL PAYLOAD FINAL:", payload)
+    print("🚀 EMAIL PAYLOAD FINAL:", payload)
 
     email_success, email_response = send_invoice_email(
         email=payload["email"],
@@ -82,6 +94,8 @@ def create_invoice(data: InvoiceCreateRequest, db: Session = Depends(get_db)):
 
     db.commit()
     db.refresh(invoice)
+
+    print("========== END INVOICE DEBUG ==========")
 
     return invoice
 

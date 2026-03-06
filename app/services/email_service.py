@@ -6,6 +6,10 @@ def send_invoice_email(email: str, name: str, invoice_id: str, amount: float, li
     EMAIL_SERVICE_URL = os.getenv("EMAIL_SERVICE_URL")
     EMAIL_API_KEY = os.getenv("EMAIL_API_KEY")
 
+    print("========== EMAIL SERVICE DEBUG ==========")
+    print("EMAIL_SERVICE_URL:", EMAIL_SERVICE_URL)
+    print("EMAIL_API_KEY exists:", bool(EMAIL_API_KEY))
+
     if not EMAIL_SERVICE_URL or not EMAIL_API_KEY:
         print("Email service env vars missing")
         return False, "Missing env variables"
@@ -25,8 +29,10 @@ def send_invoice_email(email: str, name: str, invoice_id: str, amount: float, li
 
     url = EMAIL_SERVICE_URL.rstrip("/") + "/invoice"
 
-    print("DEBUG EMAIL URL:", url)
-    print("DEBUG PAYLOAD:", payload)
+    print("FINAL EMAIL REQUEST")
+    print("URL:", url)
+    print("HEADERS:", headers)
+    print("PAYLOAD:", payload)
 
     try:
         response = requests.post(
@@ -36,11 +42,12 @@ def send_invoice_email(email: str, name: str, invoice_id: str, amount: float, li
             timeout=10
         )
 
-        print("Email status:", response.status_code)
-        print("Email body:", response.text)
+        print("Email Status:", response.status_code)
+        print("Email Response:", response.text)
+        print("=========================================")
 
         return response.status_code == 200, response.text
 
     except Exception as e:
-        print("Email request failed:", e)
+        print("mail Request Failed:", e)
         return False, str(e)
