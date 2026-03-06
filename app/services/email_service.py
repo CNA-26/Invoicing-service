@@ -3,6 +3,7 @@ import requests
 
 
 def send_invoice_email(email: str, name: str, invoice_id: str, amount: float, link: str):
+
     EMAIL_SERVICE_URL = os.getenv("EMAIL_SERVICE_URL")
     EMAIL_API_KEY = os.getenv("EMAIL_API_KEY")
 
@@ -34,10 +35,7 @@ def send_invoice_email(email: str, name: str, invoice_id: str, amount: float, li
         print("Email status:", response.status_code)
         print("Email body:", response.text)
 
-        if response.status_code == 200:
-            return True, response.text
-        else:
-            return False, response.text
+        return response.status_code == 200, response.text
 
     except Exception as e:
         print("Email request failed:", e)

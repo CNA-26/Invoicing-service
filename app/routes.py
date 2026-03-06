@@ -21,7 +21,6 @@ INVOICE_BASE_URL = os.getenv(
     "http://localhost:8080"
 )
 
-# bla bla
 
 @router.post("/invoices", response_model=InvoiceResponse)
 def create_invoice(data: InvoiceCreateRequest, db: Session = Depends(get_db)):
@@ -31,8 +30,12 @@ def create_invoice(data: InvoiceCreateRequest, db: Session = Depends(get_db)):
     if not order:
         raise HTTPException(status_code=404, detail="Order not found")
 
+    print("ORDER FROM ORDER SERVICE:", order)
+
     invoice_id = f"inv-{uuid.uuid4().hex[:6]}"
     amount = sum(item["price"] for item in order["items"])
+
+    pdf_url = f"{INVOICE_BASE_URL}/invoices/{invoice_id}/pdf"
 
     invoice = Invoice(
         invoiceId=invoice_id,
@@ -42,7 +45,7 @@ def create_invoice(data: InvoiceCreateRequest, db: Session = Depends(get_db)):
         amount=amount,
         currency="EUR",
         status="created",
-        pdfUrl=f"{INVOICE_BASE_URL}/invoices/{invoice_id}/pdf"
+        pdfUrl=pdf_url
     )
 
     db.add(invoice)
@@ -56,21 +59,25 @@ def create_invoice(data: InvoiceCreateRequest, db: Session = Depends(get_db)):
     with open(pdf_path, "wb") as f:
         f.write(pdf_bytes)
 
+    print("SENDING TO EMAIL SERVICE:")
+    print("email:", order["email"])
+    print("name:", "Customer")
+    print("invoice_id:", invoice_id)
+    print("amount:", amount)
+    print("link:", pdf_url)
+
     email_success, email_response = send_invoice_email(
-    email=order["email"],
-    name="Customer",
-    invoice_id=invoice_id,
-    amount=amount,
-    link=invoice.pdfUrl
+        email=order["email"],
+        name="Customer",
+        invoice_id=invoice_id,
+        amount=amount,
+        link=pdf_url
     )
 
     print("EMAIL SUCCESS:", email_success)
     print("EMAIL RESPONSE:", email_response)
 
-    if email_success:
-        invoice.status = "email_sent"
-    else:
-        invoice.status = "email_failed"
+    invoice.status = "email_sent" if email_success else "email_failed"
 
     db.commit()
     db.refresh(invoice)
