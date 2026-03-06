@@ -88,6 +88,15 @@ def create_invoice(data: InvoiceCreateRequest, db: Session = Depends(get_db)):
     for key, value in payload.items():
         print(f"   {key} =", value)
 
+    print("===== DEBUG BEFORE EMAIL CALL =====")
+    print("EMAIL:", payload["email"])
+    print("NAME:", payload["name"])
+    print("INVOICEID:", payload["invoiceId"])
+    print("AMOUNT:", payload["amount"])
+    print("LINK:", payload["link"])
+    print("EMAIL SERVICE URL:", os.getenv("EMAIL_SERVICE_URL"))
+    print("EMAIL API KEY:", os.getenv("EMAIL_API_KEY"))    
+
     email_success, email_response = send_invoice_email(
         email=payload["email"],
         name=payload["name"],
