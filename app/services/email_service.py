@@ -25,7 +25,7 @@ def send_invoice_email(email: str, name: str, invoice_id: str, amount: float, li
 
     try:
         response = requests.post(
-            f"{EMAIL_SERVICE_URL}/invoice",
+            f"{EMAIL_SERVICE_URL}/",
             json=payload,
             headers=headers,
             timeout=10
