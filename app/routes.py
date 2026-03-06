@@ -58,8 +58,10 @@ def create_invoice(data: InvoiceCreateRequest, db: Session = Depends(get_db)):
 
     email_success, email_response = send_invoice_email(
     email=order["email"],
+    name="Customer",
     invoice_id=invoice_id,
-    amount=amount
+    amount=amount,
+    link=invoice.pdfUrl
     )
 
     print("EMAIL SUCCESS:", email_success)

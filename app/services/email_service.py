@@ -2,7 +2,7 @@ import os
 import requests
 
 
-def send_invoice_email(email: str, invoice_id: str, amount: float):
+def send_invoice_email(email: str, name: str, invoice_id: str, amount: float, link: str):
     EMAIL_SERVICE_URL = os.getenv("EMAIL_SERVICE_URL")
     EMAIL_API_KEY = os.getenv("EMAIL_API_KEY")
 
@@ -12,8 +12,10 @@ def send_invoice_email(email: str, invoice_id: str, amount: float):
 
     payload = {
         "email": email,
+        "name": name,
         "invoiceId": invoice_id,
-        "amount": amount
+        "amount": amount,
+        "link": link
     }
 
     headers = {
