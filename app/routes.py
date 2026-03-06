@@ -25,15 +25,17 @@ INVOICE_BASE_URL = os.getenv(
 @router.post("/invoices", response_model=InvoiceResponse)
 def create_invoice(data: InvoiceCreateRequest, db: Session = Depends(get_db)):
 
-    print("========== INVOICE SERVICE DEBUG ==========")
+    print("\n========== INVOICE SERVICE DEBUG ==========")
     print("Received orderId:", data.orderId)
 
     order = orders.get(data.orderId)
 
     if not order:
+        print("Order not found in order_data")
         raise HTTPException(status_code=404, detail="Order not found")
 
-    print("ORDER DATA:", order)
+    print("ORDER DATA FOUND:")
+    print(order)
 
     invoice_id = f"inv-{uuid.uuid4().hex[:6]}"
     amount = sum(item["price"] for item in order["items"])
@@ -41,7 +43,9 @@ def create_invoice(data: InvoiceCreateRequest, db: Session = Depends(get_db)):
 
     print("Generated invoice_id:", invoice_id)
     print("Calculated amount:", amount)
-    print("PDF URL:", pdf_url)
+    print("Generated PDF URL:", pdf_url)
+    print("INVOICE_BASE_URL:", INVOICE_BASE_URL)
+    print("PDF_FOLDER:", PDF_FOLDER)
 
     invoice = Invoice(
         invoiceId=invoice_id,
@@ -77,7 +81,12 @@ def create_invoice(data: InvoiceCreateRequest, db: Session = Depends(get_db)):
         "link": pdf_url
     }
 
-    print("🚀 EMAIL PAYLOAD FINAL:", payload)
+    print("EMAIL PAYLOAD FINAL:")
+    print(payload)
+
+    print("Checking if any payload value is None:")
+    for key, value in payload.items():
+        print(f"   {key} =", value)
 
     email_success, email_response = send_invoice_email(
         email=payload["email"],
@@ -95,7 +104,7 @@ def create_invoice(data: InvoiceCreateRequest, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(invoice)
 
-    print("========== END INVOICE DEBUG ==========")
+    print("========== END INVOICE DEBUG ==========\n")
 
     return invoice
 
@@ -105,7 +114,12 @@ def download_pdf(invoice_id: str):
 
     pdf_path = os.path.join(PDF_FOLDER, f"{invoice_id}.pdf")
 
+    print("Download PDF request:", invoice_id)
+    print("Looking for file:", pdf_path)
+
     if not os.path.exists(pdf_path):
+        print("PDF NOT FOUND")
         raise HTTPException(status_code=404, detail="Invoice PDF not found")
 
+    print("PDF FOUND - returning file")
     return FileResponse(pdf_path, media_type="application/pdf")
