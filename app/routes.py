@@ -34,7 +34,6 @@ def create_invoice(data: InvoiceCreateRequest, db: Session = Depends(get_db)):
 
     invoice_id = f"inv-{uuid.uuid4().hex[:6]}"
     amount = sum(item["price"] for item in order["items"])
-
     pdf_url = f"{INVOICE_BASE_URL}/invoices/{invoice_id}/pdf"
 
     invoice = Invoice(
@@ -55,23 +54,25 @@ def create_invoice(data: InvoiceCreateRequest, db: Session = Depends(get_db)):
     pdf_bytes = generate_invoice_pdf(invoice.__dict__, order)
 
     pdf_path = os.path.join(PDF_FOLDER, f"{invoice_id}.pdf")
-
     with open(pdf_path, "wb") as f:
         f.write(pdf_bytes)
 
-    print("SENDING TO EMAIL SERVICE:")
-    print("email:", order["email"])
-    print("name:", "Customer")
-    print("invoice_id:", invoice_id)
-    print("amount:", amount)
-    print("link:", pdf_url)
+    payload = {
+        "email": order["email"],
+        "name": "Customer",
+        "invoiceId": invoice_id,
+        "amount": amount,
+        "link": pdf_url
+    }
+
+    print("EMAIL PAYLOAD FINAL:", payload)
 
     email_success, email_response = send_invoice_email(
-        email=order["email"],
-        name="Customer",
-        invoice_id=invoice_id,
-        amount=amount,
-        link=pdf_url
+        email=payload["email"],
+        name=payload["name"],
+        invoice_id=payload["invoiceId"],
+        amount=payload["amount"],
+        link=payload["link"]
     )
 
     print("EMAIL SUCCESS:", email_success)

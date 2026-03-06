@@ -25,6 +25,10 @@ def send_invoice_email(email: str, name: str, invoice_id: str, amount: float, li
     }
 
     try:
+        print("SENDING REQUEST TO EMAIL SERVICE:")
+        print("URL:", f"{EMAIL_SERVICE_URL}/invoice")
+        print("PAYLOAD:", payload)
+
         response = requests.post(
             f"{EMAIL_SERVICE_URL}/invoice",
             json=payload,
@@ -35,7 +39,10 @@ def send_invoice_email(email: str, name: str, invoice_id: str, amount: float, li
         print("Email status:", response.status_code)
         print("Email body:", response.text)
 
-        return response.status_code == 200, response.text
+        if response.status_code == 200:
+            return True, response.text
+        else:
+            return False, response.text
 
     except Exception as e:
         print("Email request failed:", e)
