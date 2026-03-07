@@ -51,7 +51,7 @@ def create_invoice(data: InvoiceCreateRequest, db: Session = Depends(get_db)):
         invoiceId=invoice_id,
         orderId=order["orderId"],
         userId=order["userId"],
-        email=order["email"],
+        email=data.email or order["email"],
         amount=amount,
         currency="EUR",
         status="created",
@@ -74,7 +74,7 @@ def create_invoice(data: InvoiceCreateRequest, db: Session = Depends(get_db)):
     print("PDF created at:", pdf_path)
 
     payload = {
-        "email": order["email"],
+        "email": invoice.email,
         "name": "Customer",
         "invoiceId": invoice_id,
         "amount": amount,
